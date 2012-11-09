@@ -135,8 +135,8 @@ class MNN:
                 self.wo[j][k] = self.wo[j][k] + N*change + M*self.co[j][k]
                 self.co[j][k] = change
                 #Calculate modify
-                tmp_wb=Nb*complex(self.wo[j][k].real*re_ah,self.wo[j][k].imag*im_ah)
-                self.wo[j][k]-=tmp_wb
+                tmp_wb=Hj*Nb*complex(output_deltas[k].real*re_ah,output_deltas[k].imag*im_ah)
+                self.wo[j][k]+=tmp_wb
 
         # update input weights
         for i in range(self.ni):
@@ -147,8 +147,8 @@ class MNN:
                 self.wi[i][j] = self.wi[i][j] + N*change + M*self.ci[i][j] #
                 self.ci[i][j] = change
                 #Calculate modify
-                tmp_wb=Nb*complex(self.wi[i][j].real*re_ah,self.wi[i][j].imag*im_ah)
-                self.wi[i][j]-=tmp_wb
+                tmp_wb=Hi*Nb*complex(hidden_deltas[j].real*re_ah,hidden_deltas[j].imag*im_ah)
+                self.wi[i][j]+=tmp_wb
 
         # calculate error
         #error = complex(0.0,0.0)
