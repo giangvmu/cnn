@@ -95,7 +95,7 @@ class MNN:
                 self.ao[k] = sigmoid(total)        
         return self.ao[:]
 
-    def backPropagate(self, targets, N, M,Nb=0.1):
+    def backPropagate(self, targets, N, M,Nb):
 
         #Ep=Ea+Eb
         #(wi,j)=(wi,j)a+(wi,j)b
@@ -105,7 +105,7 @@ class MNN:
             raise ValueError, 'wrong number of target values'
         re_ah=0.0
         im_ah=0.0
-        for j in range(self.no):
+        for j in range(self.nh):
             re_ah+=((self.ah[j].real-0.5)**2)
             im_ah+=((self.ah[j].imag-0.5)**2)
 
@@ -135,8 +135,17 @@ class MNN:
                 self.wo[j][k] = self.wo[j][k] + N*change + M*self.co[j][k]
                 self.co[j][k] = change
                 #Calculate modify
-                tmp_wb=Hj*Nb*complex(output_deltas[k].real*re_ah,output_deltas[k].imag*im_ah)
+                tmp_wb=-Hj*Nb*complex(output_deltas[k].real*re_ah,output_deltas[k].imag*im_ah)
+                #tmp_wb=-Nb*complex(self.wo[j][k].real*re_ah,self.wo[j][k].imag*im_ah)
                 self.wo[j][k]+=tmp_wb
+        # calculate error
+        #error = complex(0.0,0.0)
+        error = 0.0
+        eb=0.0
+        for k in range(len(targets)):
+            #error += (targets[k]-self.ao[k])**2
+            error += (((targets[k].real-self.ao[k].real)**2)+((targets[k].imag-self.ao[k].imag)**2))
+            eb+=(((targets[k].real-self.ao[k].real)**2)*re_ah+((targets[k].imag-self.ao[k].imag)**2)*im_ah)
 
         # update input weights
         for i in range(self.ni):
@@ -147,17 +156,11 @@ class MNN:
                 self.wi[i][j] = self.wi[i][j] + N*change + M*self.ci[i][j] #
                 self.ci[i][j] = change
                 #Calculate modify
-                tmp_wb=Hi*Nb*complex(hidden_deltas[j].real*re_ah,hidden_deltas[j].imag*im_ah)
+                tmp_wb=-Hi*Nb*complex(hidden_deltas[j].real*re_ah,hidden_deltas[j].imag*im_ah)-Hi*Nb*error*complex((self.ah[j].real-0.5)*(1-self.ah[j].real)*self.ah[j].real,(self.ah[j].imag-0.5)*(1-self.ah[j].imag)*self.ah[j].imag)
+                #tmp_wb=-Nb*complex(self.wi[i][j].real*re_ah,self.wi[i][j].imag*im_ah)-Hi*Nb*error*complex((self.ah[j].real-0.5)*(1-self.ah[j].real)*self.ah[j].real,(self.ah[j].imag-0.5)*(1-self.ah[j].imag)*self.ah[j].imag)
                 self.wi[i][j]+=tmp_wb
 
-        # calculate error
-        #error = complex(0.0,0.0)
-        error = 0.0		
-        eb=0.0
-        for k in range(len(targets)):
-            #error += (targets[k]-self.ao[k])*(targets[k]-self.ao[k]))
-            error += ((targets[k].real-self.ao[k].real)*(targets[k].real-self.ao[k].real)+(targets[k].imag-self.ao[k].imag)*(targets[k].imag-self.ao[k].imag))
-            eb+=((targets[k].real-self.ao[k].real)*(targets[k].real-self.ao[k].real)*re_ah+(targets[k].imag-self.ao[k].imag)*(targets[k].imag-self.ao[k].imag)*im_ah)
+
         return 0.5*(error+eb)
 
 
@@ -169,7 +172,7 @@ class MNN:
             tmp.append(self.update(p[0]))
         return tmp
 
-    def train(self, patterns, iterations=1, N=0.5, M=0.1, verbose = False):
+    def train(self, patterns, iterations=1, N=0.5, M=0.1, verbose = False,Nb=0.1):
         """Train the neural network.
         N is the learning rate.
         M is the momentum factor.
@@ -180,7 +183,7 @@ class MNN:
             error = 0.0
             for p in patterns:
                 self.update(p[0])
-                tmp = self.backPropagate(p[1], N, M)
+                tmp = self.backPropagate(p[1], N, M,Nb)
                 error += tmp
             if ((i+1) % 100 == 0) and (verbose==True):
                 #print '%s - error real:%s , imaginary: %s' %(i+1,error.real,error.imag)

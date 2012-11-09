@@ -115,7 +115,7 @@ def CNN_run(ni,nh,no,eps,lr,mm,f_train,f_test):
     #CNNLib.plot(out_data,tmp_out,num_output)
     return tmp_err
 
-def MCNN_run(ni,nh,no,eps,lr,mm,f_train,f_test):
+def MCNN_run(ni,nh,no,eps,lr,mm,f_train,f_test,Nb=0.1):
     num_input=ni
     num_hidden=nh
     num_output=no
@@ -155,7 +155,7 @@ def MCNN_run(ni,nh,no,eps,lr,mm,f_train,f_test):
     MCNN_Net = MCNNLib.MNN(num_input, num_hidden, num_output, regression = False)
 
     # train it with some patterns
-    tmp_err=MCNN_Net.train(inp_train, epochs, l_rate, moment, True)
+    tmp_err=MCNN_Net.train(inp_train, epochs, l_rate, moment, True,Nb)
 
 	# read data from data to test
     data = loadtxt( file_test, delimiter = ' ')
@@ -192,9 +192,9 @@ def MCNN_run(ni,nh,no,eps,lr,mm,f_train,f_test):
 
 
 if __name__ == '__main__':
-    err1=RNN_run(4,5,4,300,0.2,0.1,'data/train3.txt','data/test3.txt')
-    err2=CNN_run(2,5,2,300,0.2,0.1,'data/train3.txt','data/test3.txt')
-    err3=MCNN_run(2,5,2,300,0.2,0.1,'data/train3.txt','data/test3.txt')
+    err1=RNN_run(4,3,4,500,0.1,0.1,'data/train3.txt','data/test3.txt')
+    err2=CNN_run(2,3,2,500,0.1,0.1,'data/train3.txt','data/test3.txt')
+    err3=MCNN_run(2,3,2,500,0.1,0.1,'data/train3.txt','data/test3.txt',0.1)
 
     #Plot error
     try:
